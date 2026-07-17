@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Time Impact on Conversion Rate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --surface-subtle: #F2F1EE;
+    --border: #E4E2DC;
+    --border-strong: #CCCAC2;
+    --text-primary: #1A1916;
+    --text-secondary: #5C5A54;
+    --text-muted: #9A9890;
+    --red: #B52A2A;
+    --red-bg: #FDF0F0;
+    --red-border: #F0C4C4;
+    --blue: #1A4F8A;
+    --blue-bg: #EEF4FB;
+    --blue-border: #B8D0EC;
+    --purple: #4A3A9A;
+    --purple-bg: #F2F0FD;
+    --purple-border: #CEC8F0;
+    --gray-bg: #F2F1EE;
+    --gray-border: #CCCAC2;
+    --gray-text: #5C5A54;
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font-display: 'Inter Tight', 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+  body { background: var(--bg); font-family: var(--font-body); color: var(--text-primary); font-size: 14px; line-height: 1.6; min-height: 100vh; padding: 0 0 4rem; }
+
+  /* Header */
+  .page-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 2rem 2.5rem 0; position: sticky; top: 0; z-index: 100; }
+  .header-top { max-width: 1100px; margin: 0 auto; padding-bottom: 1.25rem; }
+  .header-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .header-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); }
+  .header-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+  h1 { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -.02em; color: var(--text-primary); line-height: 1.2; }
+  .header-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* Tabs */
+  .tabs { max-width: 1100px; margin: 0 auto; display: flex; gap: 0; border-top: 1px solid var(--border); }
+  .tab-btn { font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 12px 20px; border: none; background: none; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; white-space: nowrap; }
+  .tab-btn:hover { color: var(--text-secondary); }
+  .tab-btn.active-lt { color: var(--blue); border-bottom-color: var(--blue); }
+  .tab-btn.active-win { color: var(--purple); border-bottom-color: var(--purple); }
+
+  /* Main */
+  .main { max-width: 1100px; margin: 2rem auto 0; padding: 0 2rem; }
+
+  /* Badges */
+  .badge { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 99px; border: 1px solid transparent; white-space: nowrap; display: inline-block; }
+  .badge-lt   { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .badge-win  { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+  .badge-sig  { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+  .badge-ns   { background: var(--gray-bg); color: var(--gray-text); border-color: var(--gray-border); }
+
+  /* Country list */
+  .country-list { display: flex; flex-direction: column; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+
+  .country-item { border-bottom: 1px solid var(--border); }
+  .country-item:last-child { border-bottom: none; }
+
+  .country-row {
+    display: grid;
+    grid-template-columns: 200px 140px 140px 1fr 24px;
+    align-items: center;
+    padding: 13px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .12s;
+    gap: 12px;
+  }
+  .country-row:hover { background: var(--surface-subtle); }
+
+  .country-name { font-size: 14px; font-weight: 600; font-family: var(--font-display); display: flex; align-items: center; gap: 8px; }
+  .country-flag { font-size: 16px; }
+
+  .col-label { font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
+  .col-val { font-size: 13px; font-weight: 500; }
+  .col-val.neg { color: var(--red); }
+  .col-val.muted { color: var(--text-muted); font-style: italic; font-weight: 400; }
+
+  .chevron { width: 16px; height: 16px; color: var(--text-muted); transition: transform .2s; flex-shrink: 0; justify-self: end; }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* Header row */
+  .list-header {
+    display: grid;
+    grid-template-columns: 200px 140px 140px 1fr 24px;
+    padding: 9px 18px;
+    gap: 12px;
+    background: var(--surface-subtle);
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .list-header span { font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); }
+
+  /* Expanded detail */
+  .country-detail { display: none; border-top: 1px solid var(--border); background: var(--bg); }
+  .country-detail.open { display: block; }
+  .detail-inner { padding: 0; }
+
+  .section { padding: 16px 18px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .section:last-child { border-bottom: none; }
+  .sec-label { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metric-box { background: var(--surface-subtle); border-radius: var(--radius); padding: 10px 12px; }
+  .m-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+  .m-val { font-size: 16px; font-weight: 600; font-family: var(--font-display); }
+  .m-val.neg { color: var(--red); }
+  .m-val.dash { color: var(--text-muted); font-size: 14px; font-weight: 400; }
+  .m-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  .threshold-list { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+  .threshold-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 5px 10px; border-radius: var(--radius-sm); background: var(--surface-subtle); gap: 8px; }
+  .threshold-label { color: var(--text-secondary); }
+  .threshold-val.neg { color: var(--red); font-weight: 600; }
+  .threshold-val.warn { color: #8A5200; font-weight: 600; }
+  .threshold-val.none { color: var(--text-muted); font-style: italic; }
+
+  table.cat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.cat-table th { font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); padding: 0 10px 8px 0; text-align: left; border-bottom: 1px solid var(--border); }
+  table.cat-table td { padding: 8px 10px 8px 0; color: var(--text-secondary); border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.4; }
+  table.cat-table tr:last-child td { border-bottom: none; }
+  table.cat-table td:first-child { font-weight: 500; color: var(--text-primary); }
+  .sig-neg { color: var(--red); font-weight: 600; }
+  .not-sig { color: var(--text-muted); font-style: italic; }
+  .table-footnote { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+  .insight-box { font-size: 13px; line-height: 1.6; color: var(--text-secondary); background: var(--surface-subtle); border-radius: var(--radius); padding: 12px 14px; }
+  .rec-box { font-size: 13px; line-height: 1.6; color: var(--text-secondary); background: var(--blue-bg); border-radius: var(--radius); padding: 12px 14px; border-left: 3px solid var(--blue); }
+
+  .page-footer { max-width: 1100px; margin: 2.5rem auto 0; padding: 0 2rem; font-size: 11px; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap; }
+
+  @media (max-width: 700px) {
+    .page-header { padding: 1.25rem 1.25rem 0; }
+    .main { padding: 0 1rem; margin-top: 1.25rem; }
+    .country-row, .list-header { grid-template-columns: 1fr 100px 24px; }
+    .col-cliff-wrap, .col-thresh-wrap { display: none; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-top">
+    <div class="header-meta">
+      <span class="header-eyebrow">D2C Pod · Data Team</span>
+      <span class="header-dot"></span>
+      <span class="header-eyebrow">Preliminary — not for external distribution</span>
+    </div>
+    <h1>Lead Time Impact on Conversion Rate</h1>
+    <p class="header-sub">Click any country to see full analysis · 26-week period</p>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active-lt" onclick="switchTab('lt', this)" id="tab-lt">📦 Lead time length</button>
+    <button class="tab-btn" onclick="switchTab('win', this)" id="tab-win">📅 Window size</button>
+  </div>
+</header>
+
+<main class="main">
+  <div id="view-lt"></div>
+  <div id="view-win" style="display:none"></div>
+</main>
+
+<footer class="page-footer">
+  <span>Source: D2C Pod Deep Dive Analysis — Confluence (DSDE space)</span>
+  <span>Layer 2 = country-level SKU-controlled model · Layer 3 = country × category SKU-controlled model</span>
+</footer>
+
+<script>
+// ─── Country data ────────────────────────────────────────────────────────────
+const countries = [
+  {
+    code:"AT", flag:"🇦🇹", name:"Austria",
+    lt: {
+      sig: true,
+      perDay: "-0.79%",
+      cliff: "-15%",
+      threshold: "LT >7 days",
+      categories: [
+        { name:"Mattresses", val:"-0.68%/day", sig:true, note:"LT signal confirmed" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT >7 days", val:"-15.1% orders", type:"warn" },
+        { label:"LT >10 days", val:"No confirmed cliff", type:"none" }
+      ],
+      insight: "LT-to sensitivity is confirmed at country level but no hard cliff exists beyond 7 days. The effect is mainly driven by Mattresses. General LT reduction will have a measurable effect, particularly for Mattresses.",
+      rec: "For Mattresses, any reduction in LT days will have a measurable effect. No specific hard breakpoint — general LT reduction applies. Lower priority than markets with confirmed hard cliffs."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-15%",
+      threshold: "Window >7 days",
+      categories: [
+        { name:"Mattresses", val:"Window >7d → directional", sig:false, note:"Directional only — not confirmed" },
+        { name:"Accessories", val:"Window avg positive", sig:false, note:"Structural artefact, not customer preference" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window >7 days", val:"-15.1% orders", type:"warn" },
+        { label:"Window >10 days", val:"Signal does not hold", type:"none" }
+      ],
+      insight: "The window threshold at 7 days shows a directional drop but does not hold at higher thresholds, suggesting product mix influence. Country-wide window average is not actionable.",
+      rec: "Validate AT window findings with bucket-level data before acting. No immediate action required."
+    }
+  },
+  {
+    code:"BE", flag:"🇧🇪", name:"Belgium",
+    lt: {
+      sig: true,
+      perDay: "-0.63%",
+      cliff: "-12%",
+      threshold: "LT >15 days",
+      categories: [
+        { name:"Mattresses", val:"-1.27%/day", sig:true, note:"Strongest segment — LT signal confirmed" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT >15 days", val:"-12.1% orders", type:"warn" },
+        { label:"LT >20 days", val:"No confirmed cliff", type:"none" }
+      ],
+      insight: "BE's LT sensitivity is concentrated in Mattresses. The cliff appears around 15 days. Country-wide per-day signal is confirmed but the Mattresses segment is where the actionable finding sits.",
+      rec: "Keep BE Mattresses LT-to under 15 days. Category-specific action more justified than country-wide."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-28%",
+      threshold: "Window >10 days",
+      categories: [
+        { name:"Mattresses", val:"Window >10d → -27.9%", sig:true, note:"Window cliff confirmed" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window >10 days", val:"-27.9% orders", type:"neg" },
+        { label:"Window >15 days", val:"No confirmed cliff", type:"none" }
+      ],
+      insight: "BE Mattresses shows a confirmed window cliff above 10 days. Country-level window average is not the story — this is segment-specific.",
+      rec: "Keep BE Mattresses windows under 10 days. No country-wide window action justified."
+    }
+  },
+  {
+    code:"CH", flag:"🇨🇭", name:"Switzerland",
+    lt: {
+      sig: false,
+      perDay: null,
+      cliff: null,
+      threshold: null,
+      categories: [
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT breakpoint", val:"No reliable cliff", type:"none" }
+      ],
+      insight: "No confirmed LT sensitivity in CH at country or category level after SKU controls.",
+      rec: "No action required on lead time length in CH based on this analysis."
+    },
+    win: {
+      sig: false,
+      perDay: null,
+      cliff: null,
+      threshold: null,
+      categories: [
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window >7 days", val:"Directional but reverses at higher thresholds — likely product mix", type:"none" }
+      ],
+      insight: "No confirmed window sensitivity in CH. The >7d directional signal does not hold at higher thresholds, suggesting product mix rather than customer behaviour.",
+      rec: "No action required on window size in CH based on this analysis."
+    }
+  },
+  {
+    code:"DE", flag:"🇩🇪", name:"Germany",
+    lt: {
+      sig: true,
+      perDay: "-0.49%",
+      cliff: "-12%",
+      threshold: "LT >10 days",
+      categories: [
+        { name:"Mattresses", val:"-0.32%/day", sig:true, note:"Primary segment — LT cliff at 10 days confirmed" },
+        { name:"Refurb. Mattresses", val:"-1.81%/day", sig:true, note:"LT signal confirmed — smaller volume" },
+        { name:"Beds", val:null, sig:false, note:"Directional only — not confirmed" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT >10 days", val:"-12.1% orders", type:"neg" },
+        { label:"LT >15 days", val:"-15.8% orders", type:"neg" },
+        { label:"LT >20 days", val:"-14.9% orders", type:"neg" }
+      ],
+      insight: "DE has confirmed LT sensitivity with a clear cliff around 10–15 days. DE Mattresses is the top segment. Very high traffic volume means even small LT improvements have significant commercial impact.",
+      rec: "Target DE Mattresses LT-to ≤10 days. Given traffic scale, even marginal improvements are high value. Also review Refurbished Mattresses LT."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-16%",
+      threshold: "Window >10 days",
+      categories: [
+        { name:"Mattresses", val:"Window >10d → -16.2%", sig:true, note:"Window cliff confirmed" },
+        { name:"Refurb. Mattresses", val:null, sig:false, note:"No confirmed window signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed window signal" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window >7 days", val:"-4.3% orders (not significant)", type:"none" },
+        { label:"Window >10 days", val:"-16.2% orders", type:"neg" }
+      ],
+      insight: "DE Mattresses shows a confirmed window cliff above 10 days. The country average is not actionable — this is a Mattresses-specific finding.",
+      rec: "Keep DE Mattresses windows under 10 days. No country-wide window action justified beyond Mattresses."
+    }
+  },
+  {
+    code:"ES", flag:"🇪🇸", name:"Spain",
+    lt: {
+      sig: false,
+      perDay: null,
+      cliff: null,
+      threshold: null,
+      categories: [
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed LT signal" },
+        { name:"Accessories", val:null, sig:false, note:"Mixed / inconsistent" },
+        { name:"Beds", val:"-0.42%/day", sig:true, note:"LT signal confirmed — validate before acting, signal not consistent at thresholds" }
+      ],
+      thresholds: [
+        { label:"LT breakpoint", val:"Negative but non-monotonic — do not act on LT alone", type:"none" }
+      ],
+      insight: "No confirmed LT sensitivity in ES at country level after SKU controls. The Beds segment shows a per-day LT signal but it is not consistent across thresholds and should be validated before acting.",
+      rec: "No country-wide LT action justified in ES. If validating Beds further, check whether the per-day signal holds in a bucket-level analysis."
+    },
+    win: {
+      sig: true,
+      perDay: "-8.48%",
+      cliff: "-73–84%",
+      threshold: "Window >10 days",
+      categories: [
+        { name:"Mattresses", val:"Window >10d → -73% | Window >15d → -99%", sig:true, note:"Critical — conversion collapse above 10 days" },
+        { name:"Accessories", val:"Window >10d → -84%", sig:true, note:"Critical — same collapse pattern" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed window signal" }
+      ],
+      thresholds: [
+        { label:"Window >10 days", val:"-60.7% orders", type:"neg" },
+        { label:"Window >15 days", val:"-72.1% orders", type:"neg" }
+      ],
+      insight: "ES is a window-precision market. Once windows exceed 10 days, conversion collapses in Mattresses (−73% to −99%) and Accessories (−84%). The magnitude may reflect abnormal promise states — operational validation is essential.",
+      rec: "Eliminate windows >10 days in ES Mattresses and Accessories. Target ≤7 days. Investigate how windows are calculated — this is a promise-precision problem."
+    }
+  },
+  {
+    code:"FR", flag:"🇫🇷", name:"France",
+    lt: {
+      sig: true,
+      perDay: null,
+      cliff: "-23–27%",
+      threshold: "LT >20 days",
+      categories: [
+        { name:"Mattresses", val:"-0.54%/day", sig:true, note:"LT per-day confirmed; cliff at >20 days" },
+        { name:"Beds", val:"-0.75%/day", sig:true, note:"LT signal confirmed" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT >20 days", val:"-22.7% orders", type:"warn" },
+        { label:"LT >30 days", val:"-27.3% orders", type:"warn" }
+      ],
+      insight: "FR does not have broad LT sensitivity. The issue is a long-LT tail: specific SKUs or situations where LT-to exceeds 20–30 days drive meaningful conversion loss in Mattresses and Beds. Likely a stock or routing problem for specific SKUs.",
+      rec: "Identify FR Mattresses and Beds SKUs with LT-to >20 days and investigate root cause. This is a long-tail cleanup, not a general LT improvement programme."
+    },
+    win: {
+      sig: false,
+      perDay: null,
+      cliff: null,
+      threshold: null,
+      categories: [
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed window signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed window signal" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window breakpoint", val:"No confirmed cliff", type:"none" }
+      ],
+      insight: "No confirmed window sensitivity in FR at country or category level after SKU controls.",
+      rec: "No window size action required in FR based on this analysis."
+    }
+  },
+  {
+    code:"IE", flag:"🇮🇪", name:"Ireland",
+    lt: {
+      sig: true,
+      perDay: "-1.71%",
+      cliff: "-34%",
+      threshold: "LT >10 days (Accessories)",
+      categories: [
+        { name:"Accessories", val:"-2.98%/day", sig:true, note:"Primary segment — strong LT cliff above 10 days" },
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed LT signal" }
+      ],
+      thresholds: [
+        { label:"LT >10 days (Accessories)", val:"-34.2% orders", type:"neg" },
+        { label:"Country-level LT cliff", val:"Not confirmed at country level", type:"none" }
+      ],
+      insight: "IE's LT sensitivity is concentrated in Accessories. The cliff above 10 days (−34%) is the clearest signal. Country-level LT sensitivity is real but the hard breakpoint is segment-specific. Smaller market — validate before major decisions.",
+      rec: "Focus on IE Accessories: keep LT-to under 10 days. Validate with bucket-level data given the smaller volume."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-14%",
+      threshold: "Window >5 days (Accessories)",
+      categories: [
+        { name:"Accessories", val:"Window >5d → -13.9%", sig:true, note:"Window cliff confirmed — low threshold" },
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed window signal" }
+      ],
+      thresholds: [
+        { label:"Window >5 days (Accessories)", val:"-13.9% orders", type:"warn" }
+      ],
+      insight: "IE Accessories shows a window cliff at a low threshold (5 days), which is unusual. This may reflect limited delivery options or sparse SKU coverage. Validate before acting.",
+      rec: "Keep IE Accessories windows under 5 days if operationally feasible. Validate the signal given the low threshold and smaller volume."
+    }
+  },
+  {
+    code:"IT", flag:"🇮🇹", name:"Italy",
+    lt: {
+      sig: true,
+      perDay: "-1.45%",
+      cliff: "-32%",
+      threshold: "LT >20 days",
+      categories: [
+        { name:"Accessories", val:"-3.24%/day", sig:true, note:"Strongest LT segment — very sensitive per day" },
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed LT per-day signal" },
+        { name:"Beds", val:null, sig:false, note:"Directional only" }
+      ],
+      thresholds: [
+        { label:"LT >20 days", val:"-32.4% orders", type:"neg" },
+        { label:"LT >15 days", val:"-27.3% orders (directional)", type:"warn" }
+      ],
+      insight: "IT has clear LT sensitivity (~1.5%/day) and a confirmed cliff above 20 days (−32%). IT Accessories is the most LT-sensitive segment with a very strong per-day signal.",
+      rec: "Prioritise IT Accessories for LT reduction — keep under 20 days. Validate the >15d directional figure before using as a headline."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-50–53%",
+      threshold: "Window >10 days",
+      categories: [
+        { name:"Accessories", val:"Window >10d → -50%", sig:true, note:"Window cliff confirmed" },
+        { name:"Mattresses", val:"Window >10d → -53%", sig:true, note:"Window cliff confirmed" },
+        { name:"Beds", val:null, sig:false, note:"Directional signals only" }
+      ],
+      thresholds: [
+        { label:"Window >10 days (Accessories)", val:"-50.1% orders", type:"neg" },
+        { label:"Window >10 days (Mattresses)", val:"-53.4% orders", type:"neg" }
+      ],
+      insight: "IT Accessories and Mattresses both show confirmed window cliffs above 10 days with strong magnitude (−50–53%). Window precision is a significant issue in IT.",
+      rec: "Keep IT Accessories and Mattresses windows under 10 days. Both segments need attention."
+    }
+  },
+  {
+    code:"NL", flag:"🇳🇱", name:"Netherlands",
+    lt: {
+      sig: true,
+      perDay: null,
+      cliff: null,
+      threshold: null,
+      categories: [
+        { name:"Mattresses", val:"-2.39%/day", sig:true, note:"LT signal confirmed — no hard cliff identified" },
+        { name:"Beds", val:"-0.73%/day", sig:true, note:"LT signal confirmed" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT breakpoint", val:"No confirmed cliff at country level", type:"none" }
+      ],
+      insight: "NL shows confirmed per-day LT sensitivity in Mattresses and Beds but no hard country-level cliff. General LT reduction will have a measurable effect.",
+      rec: "Reduce NL Mattresses and Beds LT-to where possible. No specific breakpoint to target — general improvement applies."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-14%",
+      threshold: "Window >7 days",
+      categories: [
+        { name:"Mattresses", val:"Window >7d → -13.5%", sig:true, note:"Window cliff confirmed" },
+        { name:"Beds", val:"Window >15d → -64% (validate volume)", sig:true, note:"Extreme figure — needs validation" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window >7 days (Mattresses)", val:"-13.5% orders", type:"warn" },
+        { label:"Window >15 days (Beds)", val:"-64.1% orders — validate volume", type:"warn" }
+      ],
+      insight: "NL Mattresses has a confirmed window breakpoint at 7 days. NL Beds shows a very large figure above 15 days but the volume is small — validate before acting.",
+      rec: "NL Mattresses: keep windows under 7 days. NL Beds: validate the >15d window finding with raw data before acting."
+    }
+  },
+  {
+    code:"PT", flag:"🇵🇹", name:"Portugal",
+    lt: {
+      sig: false,
+      perDay: null,
+      cliff: null,
+      threshold: null,
+      categories: [
+        { name:"Mattresses", val:null, sig:false, note:"No confirmed LT signal" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed LT signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed LT signal" }
+      ],
+      thresholds: [
+        { label:"LT breakpoint", val:"No meaningful negative cliff", type:"none" }
+      ],
+      insight: "No confirmed LT sensitivity in PT at country or category level after SKU controls. LT length does not appear to drive conversion in this market.",
+      rec: "No action required on lead time length in PT based on this analysis."
+    },
+    win: {
+      sig: true,
+      perDay: "-18.42%",
+      cliff: "~-99%",
+      threshold: "Window >10 days",
+      categories: [
+        { name:"Accessories", val:"Window >10d → ~-100% | Window >15d → -100%", sig:true, note:"Complete conversion collapse above 10-day window" },
+        { name:"Mattresses", val:"Window >10d → ~-100% | Window >15d → ~-100%", sig:true, note:"Complete conversion collapse above 10-day window" },
+        { name:"Beds", val:"Window >15d → -100%", sig:true, note:"Extreme — validate volume" }
+      ],
+      thresholds: [
+        { label:"Window >10 days", val:"~-99% orders", type:"neg" },
+        { label:"Window >15 days", val:"~-97% orders", type:"neg" }
+      ],
+      insight: "PT is the most extreme window case. Once windows exceed 10 days, conversion effectively goes to zero across all major categories. The −99% to −100% magnitude strongly suggests a systemic promise-calculation issue, not purely customer behaviour.",
+      rec: "Urgent: investigate what is causing windows >10 days in PT across Accessories, Mattresses and Beds. Is this a WMS or promise engine issue? Fix at root cause before any customer-facing changes."
+    }
+  },
+  {
+    code:"UK", flag:"🇬🇧", name:"United Kingdom",
+    lt: {
+      sig: true,
+      perDay: "-1.11%",
+      cliff: "-20%",
+      threshold: "LT >15 days",
+      categories: [
+        { name:"Mattresses", val:"-1.15%/day", sig:true, note:"Primary segment — LT cliff at 15 days" },
+        { name:"Refurb. Mattresses", val:"-1.10%/day", sig:true, note:"LT signal confirmed" },
+        { name:"Beds", val:"-5.26%/day", sig:true, note:"Large signal but very low volume — validate" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"LT >15 days", val:"-20.1% orders", type:"neg" },
+        { label:"LT >30 days", val:"-34.2% orders", type:"neg" }
+      ],
+      insight: "UK has confirmed LT sensitivity with a clear cliff at 15 days. UK Mattresses is the primary segment. UK Beds shows a large per-day signal but very low volume.",
+      rec: "UK Mattresses: target LT-to ≤15 days. Validate UK Beds with raw data. Also review Refurbished Mattresses LT."
+    },
+    win: {
+      sig: true,
+      perDay: null,
+      cliff: "-19%",
+      threshold: "Window >10 days",
+      categories: [
+        { name:"Mattresses", val:"Window >10d → -19.0%", sig:true, note:"Window cliff confirmed" },
+        { name:"Refurb. Mattresses", val:null, sig:false, note:"No confirmed window signal" },
+        { name:"Beds", val:null, sig:false, note:"No confirmed window signal" },
+        { name:"Accessories", val:null, sig:false, note:"No confirmed signal" }
+      ],
+      thresholds: [
+        { label:"Window >10 days (Mattresses)", val:"-19.0% orders", type:"neg" }
+      ],
+      insight: "UK Mattresses shows a confirmed window cliff above 10 days. Window sensitivity is real but concentrated in one segment.",
+      rec: "UK Mattresses: keep windows under 10 days. No country-wide window action justified."
+    }
+  }
+];
+
+// ─── Rendering ───────────────────────────────────────────────────────────────
+function switchTab(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-lt','active-win'));
+  btn.classList.add(type === 'lt' ? 'active-lt' : 'active-win');
+  document.getElementById('view-lt').style.display = type === 'lt' ? '' : 'none';
+  document.getElementById('view-win').style.display = type === 'win' ? '' : 'none';
+}
+
+function sortStates() { return { lt: 'desc', win: 'desc' }; }
+const sortDir = { lt: 'desc', win: 'desc' };
+
+function sortByCliff(type) {
+  sortDir[type] = sortDir[type] === 'desc' ? 'asc' : 'desc';
+  const dir = sortDir[type];
+
+  function cliffNum(c) {
+    const val = c[type].cliff;
+    if (!val) return 0;
+    const match = val.match(/-?([\d.]+)/);
+    return match ? -parseFloat(match[1]) : 0; // negative so bigger drop = more negative
+  }
+
+  countries.sort((a, b) => {
+    const diff = cliffNum(a) - cliffNum(b);
+    return dir === 'desc' ? diff : -diff;
+  });
+
+  // Rebuild just this view
+  document.getElementById('view-' + type).innerHTML = buildView(type);
+  // Update arrow
+  const arrow = document.getElementById('sort-arrow-' + type);
+  if (arrow) arrow.textContent = dir === 'desc' ? ' ↓' : ' ↑';
+}
+
+function buildView(type) {
+  const colLabel = type === 'lt' ? 'Lead time cliff (conversion drop)' : 'Window cliff (conversion drop)';
+  const threshLabel = type === 'lt' ? 'Lead time threshold' : 'Window threshold';
+  const badgeCls = type === 'lt' ? 'badge-lt' : 'badge-win';
+  const badgeLabel = type === 'lt' ? 'LT length' : 'Window size';
+  const arrowChar = sortDir[type] === 'desc' ? ' ↓' : ' ↑';
+  const accentColor = type === 'lt' ? 'var(--blue)' : 'var(--purple)';
+
+  let html = `
+    <div class="list-header">
+      <span>Country</span>
+      <span style="cursor:pointer;user-select:none;color:${accentColor}" onclick="sortByCliff('${type}')">${colLabel}<em id="sort-arrow-${type}" style="font-style:normal">${arrowChar}</em></span>
+      <span>${threshLabel}</span>
+      <span>Per-day sensitivity</span>
+      <span></span>
+    </div>
+    <div class="country-list">
+  `;
+
+  countries.forEach((c, i) => {
+    const d = c[type];
+    const sigBadge = d.sig
+      ? `<span class="badge ${badgeCls}">${badgeLabel}</span>`
+      : `<span class="badge badge-ns">Not significant</span>`;
+
+    const cliffVal = d.cliff
+      ? `<div class="col-val neg">${d.cliff}</div>`
+      : `<div class="col-val muted">—</div>`;
+
+    const threshVal = d.threshold
+      ? `<div class="col-val">${d.threshold}</div>`
+      : `<div class="col-val muted">—</div>`;
+
+    const perDayVal = d.perDay
+      ? `<div class="col-val neg">${d.perDay} / day</div>`
+      : `<div class="col-val muted">—</div>`;
+
+    // Category table rows
+    const catRows = d.categories.map(cat => {
+      const catVal = cat.sig
+        ? `<span class="sig-neg">${cat.val}</span>`
+        : `<span class="not-sig">not significant</span>`;
+      return `<tr><td>${cat.name}</td><td>${catVal}</td><td style="font-size:12px;color:var(--text-muted)">${cat.note}</td></tr>`;
+    }).join('');
+
+    const threshRows = d.thresholds.map(t =>
+      `<div class="threshold-row"><span class="threshold-label">${t.label}</span><span class="threshold-val ${t.type}">${t.val}</span></div>`
+    ).join('');
+
+    html += `
+      <div class="country-item">
+        <div class="country-row" onclick="toggle('${type}-${i}')" tabindex="0"
+             onkeydown="if(event.key==='Enter'||event.key===' ')toggle('${type}-${i}')"
+             aria-expanded="false" id="row-${type}-${i}">
+          <div class="country-name">
+            <span class="country-flag">${c.flag}</span>
+            <span>${c.name}</span>
+            ${sigBadge}
+          </div>
+          <div class="col-cliff-wrap">${cliffVal}</div>
+          <div class="col-thresh-wrap">${threshVal}</div>
+          <div>${perDayVal}</div>
+          <svg class="chevron" id="chev-${type}-${i}" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="country-detail" id="detail-${type}-${i}">
+          <div class="detail-inner">
+            <div class="section">
+              <div class="sec-label">Country view — Layer 2 (same SKU tracked over time, country level)</div>
+              <div class="two-col">
+                <div class="metric-box">
+                  <div class="m-label">${type === 'lt' ? 'LT-to per +1 day' : 'Window size per +1 day'}</div>
+                  ${d.perDay ? `<div class="m-val neg">${d.perDay}</div><div class="m-sub">Confirmed signal · conversion rate effect</div>` : `<div class="m-val dash">—</div><div class="m-sub">Not significant after SKU controls</div>`}
+                </div>
+                <div class="metric-box">
+                  <div class="m-label">Worst ${type === 'lt' ? 'lead time' : 'window'} threshold cliff</div>
+                  ${d.cliff ? `<div class="m-val neg">${d.cliff} conversion</div><div class="m-sub">${d.threshold}</div>` : `<div class="m-val dash">—</div><div class="m-sub">No confirmed cliff</div>`}
+                </div>
+              </div>
+              ${d.thresholds.filter(t => t.type === 'none').length > 0 ? `<div class="threshold-list">${d.thresholds.filter(t => t.type === 'none').map(t => `<div class="threshold-row"><span class="threshold-label">${t.label}</span><span class="threshold-val none">${t.val}</span></div>`).join('')}</div>` : ''}
+            </div>
+            <div class="section">
+              <div class="sec-label">Category view — Layer 3 (same SKU tracked over time, country × category)</div>
+              <table class="cat-table">
+                <thead><tr><th style="width:20%">Category</th><th style="width:35%">${type === 'lt' ? 'LT-to' : 'Window size'} impact / breakpoint</th><th>Note</th></tr></thead>
+                <tbody>${catRows}</tbody>
+              </table>
+              <p class="table-footnote">Red = statistically significant and actionable &nbsp;·&nbsp; Italic = not significant, shown for completeness</p>
+            </div>
+            <div class="section">
+              <div class="sec-label">Key insight</div>
+              <div class="insight-box">${d.insight}</div>
+            </div>
+            <div class="section">
+              <div class="sec-label">Recommendation</div>
+              <div class="rec-box">${d.rec}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function toggle(id) {
+  const detail = document.getElementById('detail-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const row = document.getElementById('row-' + id);
+  const open = detail.classList.toggle('open');
+  chev.classList.toggle('open', open);
+  row.setAttribute('aria-expanded', String(open));
+}
+
+// Build both views
+document.getElementById('view-lt').innerHTML = buildView('lt');
+document.getElementById('view-win').innerHTML = buildView('win');
+</script>
+</body>
+</html>
